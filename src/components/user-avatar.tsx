@@ -15,7 +15,7 @@ export function UserAvatar({
   image,
   className,
   ...props
-}: UserAvatarProps) {
+}: Readonly<UserAvatarProps>) {
   const initials = name
     .split(" ")
     .filter(Boolean)

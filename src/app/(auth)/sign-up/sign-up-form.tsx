@@ -19,12 +19,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 import { passwordSchema } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const signUpSchema = z
@@ -44,8 +45,6 @@ const signUpSchema = z
 type SignUpValues = z.infer<typeof signUpSchema>;
 
 export function SignUpForm() {
-  const [error, setError] = useState<string | null>(null);
-
   const router = useRouter();
 
   const form = useForm<SignUpValues>({
@@ -59,7 +58,20 @@ export function SignUpForm() {
   });
 
   async function onSubmit({ email, password, name }: SignUpValues) {
-    // TODO: Handle sign up
+    // Handle sign up
+    const { error } = await authClient.signUp.email({
+      name,
+      email,
+      password,
+      callbackURL: "/email-verified",
+    });
+
+    if (error) {
+      toast.error(error.message ?? "Something went wrong");
+    } else {
+      toast.success("Signed up successfully, Please Verify your email");
+      router.push("/dashboard");
+    }
   }
 
   const loading = form.formState.isSubmitting;
@@ -142,12 +154,6 @@ export function SignUpForm() {
                 </FormItem>
               )}
             />
-
-            {error && (
-              <div role="alert" className="text-sm text-red-600">
-                {error}
-              </div>
-            )}
 
             <LoadingButton type="submit" className="w-full" loading={loading}>
               Create an account

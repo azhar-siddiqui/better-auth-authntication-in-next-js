@@ -6,7 +6,14 @@ export const metadata: Metadata = {
   title: "Email Verified",
 };
 
-export default function EmailVerifiedPage() {
+export default async function EmailVerifiedPage() {
+  // const session = await getServerSession();
+  // const user = session?.user;
+
+  // if (!user) unauthorized();
+
+  // if (user.emailVerified) redirect("/dashboard");
+
   return (
     <main className="flex flex-1 items-center justify-center px-4 text-center">
       <div className="space-y-6">

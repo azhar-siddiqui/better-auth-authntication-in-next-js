@@ -12,7 +12,7 @@ export function LoadingButton({
   disabled,
   children,
   ...props
-}: LoadingButtonProps) {
+}: Readonly<LoadingButtonProps>) {
   return (
     <Button disabled={loading || disabled} {...props}>
       {loading ? <Loader2 className="animate-spin" /> : children}

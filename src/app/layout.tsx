@@ -25,7 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.className} antialiased`}>
+      <body
+        className={`${outfit.className} antialiased`}
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -33,7 +36,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
-          <Toaster />
+          <Toaster
+            visibleToasts={1}
+            position="bottom-right"
+            richColors
+            closeButton
+          />
         </ThemeProvider>
       </body>
     </html>

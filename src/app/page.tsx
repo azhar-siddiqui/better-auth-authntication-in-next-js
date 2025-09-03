@@ -1,6 +1,6 @@
 import betterAuthLogo from "@/assets/better_auth_logo.png";
 import codingInFlowLogo from "@/assets/coding_in_flow_logo.jpg";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -29,24 +29,21 @@ export default function Home() {
           Better-Auth Tutorial
         </h1>
         <p className="text-muted-foreground mt-3 text-base text-balance sm:text-lg">
-          Learn how to handle authentication in Next.js using Better-Auth with
-          this tutorial by{" "}
-          <Link
-            href="https://www.youtube.com/c/codinginflow?sub_confirmation=1"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            Coding in Flow
-          </Link>
+          Learn how to handle authentication in Next.js using Better-Auth
         </p>
         <div className="mx-auto mt-6 flex max-w-sm flex-col gap-3 sm:flex-row sm:justify-center">
-          <Button asChild>
-            <Link href="/dashboard">Go to Dashboard</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/sign-in">Sign In</Link>
-          </Button>
+          <Link
+            href="/dashboard"
+            className={buttonVariants({ variant: "default" })}
+          >
+            Go to Dashboard
+          </Link>
+          <Link
+            href="/sign-in"
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Sign In
+          </Link>
         </div>
       </div>
     </main>

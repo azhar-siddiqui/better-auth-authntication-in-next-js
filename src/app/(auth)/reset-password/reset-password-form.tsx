@@ -11,11 +11,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { authClient } from "@/lib/auth-client";
 import { passwordSchema } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const resetPasswordSchema = z.object({
@@ -29,9 +30,6 @@ interface ResetPasswordFormProps {
 }
 
 export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
-  const [success, setSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
   const router = useRouter();
 
   const form = useForm<ResetPasswordValues>({
@@ -40,7 +38,20 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   });
 
   async function onSubmit({ newPassword }: ResetPasswordValues) {
-    // TODO: Handle password reset request
+    // Handle password reset request
+
+    const { error } = await authClient.resetPassword({
+      newPassword,
+      token,
+    });
+
+    if (error) {
+      toast.error(error.message || "Somethig went wrong");
+    } else {
+      toast.success("Password has been reset. You can now sign in.");
+      setTimeout(() => router.push("/sign-in"), 1000);
+      form.reset();
+    }
   }
 
   const loading = form.formState.isSubmitting;
@@ -67,17 +78,6 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                 </FormItem>
               )}
             />
-
-            {success && (
-              <div role="status" className="text-sm text-green-600">
-                {success}
-              </div>
-            )}
-            {error && (
-              <div role="alert" className="text-sm text-red-600">
-                {error}
-              </div>
-            )}
 
             <LoadingButton type="submit" className="w-full" loading={loading}>
               Reset password

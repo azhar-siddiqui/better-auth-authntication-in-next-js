@@ -11,9 +11,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import z from "zod";
 
 export const updateEmailSchema = z.object({
@@ -27,8 +28,6 @@ interface EmailFormProps {
 }
 
 export function EmailForm({ currentEmail }: EmailFormProps) {
-  const [status, setStatus] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<UpdateEmailValues>({
     resolver: zodResolver(updateEmailSchema),
@@ -37,8 +36,18 @@ export function EmailForm({ currentEmail }: EmailFormProps) {
     },
   });
 
-  async function onSubmit(values: UpdateEmailValues) {
-    // TODO: Handle email update
+  async function onSubmit({ newEmail }: UpdateEmailValues) {
+    // Handle email update
+    const { error } = await authClient.changeEmail({
+      newEmail,
+      callbackURL: "/email-verified",
+    });
+
+    if (error) {
+      toast.error(error.message ?? "Failed to initiate email change");
+    } else {
+      toast.success("Verification email sent to your current email address");
+    }
   }
 
   const loading = form.formState.isSubmitting;
@@ -69,16 +78,6 @@ export function EmailForm({ currentEmail }: EmailFormProps) {
               )}
             />
 
-            {error && (
-              <div role="alert" className="text-sm text-red-600">
-                {error}
-              </div>
-            )}
-            {status && (
-              <div role="status" className="text-sm text-green-600">
-                {status}
-              </div>
-            )}
             <LoadingButton type="submit" loading={loading}>
               Request change
             </LoadingButton>

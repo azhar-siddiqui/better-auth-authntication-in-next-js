@@ -23,11 +23,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const signInSchema = z.object({
@@ -40,10 +42,20 @@ type SignInValues = z.infer<typeof signInSchema>;
 
 export function SignInForm() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const redirect = searchParams.get("redirect");
+
+  // const {
+  //   data: session,
+  //   isPending, //loading state
+  //   error, //error object
+  //   refetch, //refetch the session
+  // } = authClient.useSession();
+
+  // console.log("session", session);
 
   const form = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
@@ -55,11 +67,40 @@ export function SignInForm() {
   });
 
   async function onSubmit({ email, password, rememberMe }: SignInValues) {
-    // TODO: Handle sign in
+    // Handle sign in
+    setLoading(true);
+    const { error } = await authClient.signIn.email({
+      email,
+      password,
+      rememberMe,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      toast.error(error.message ?? "Something went wrong");
+    } else {
+      toast.success("Sign in successfully");
+      router.push(redirect ?? "/dashboard");
+    }
   }
 
   async function handleSocialSignIn(provider: "google" | "github") {
-    // TODO: Handle social sign in
+    setLoading(true);
+    // Handle social sign in
+
+    const { error } = await authClient.signIn.social({
+      provider,
+      callbackURL: redirect ?? "/dashboard",
+    });
+
+    setLoading(true);
+
+    if (error) {
+      toast.error(error.message || "Something went wrong");
+    } else {
+      toast.success("Login successfully");
+    }
   }
 
   return (
@@ -132,12 +173,6 @@ export function SignInForm() {
                 </FormItem>
               )}
             />
-
-            {error && (
-              <div role="alert" className="text-sm text-red-600">
-                {error}
-              </div>
-            )}
 
             <LoadingButton type="submit" className="w-full" loading={loading}>
               Login

@@ -13,11 +13,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UserAvatar } from "@/components/user-avatar";
+import { User } from "@/lib/auth";
+import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const updateProfileSchema = z.object({
@@ -27,28 +29,34 @@ const updateProfileSchema = z.object({
 
 export type UpdateProfileValues = z.infer<typeof updateProfileSchema>;
 
-export function ProfileDetailsForm() {
-  const [status, setStatus] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
+interface ProfileDetailsFormProps {
+  user: User;
+}
+export function ProfileDetailsForm({ user }: ProfileDetailsFormProps) {
   const router = useRouter();
-
-  // TODO: Render real user info
-  const user = {
-    name: "John Doe",
-    image: undefined,
-  };
 
   const form = useForm<UpdateProfileValues>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      name: user.name ?? "",
-      image: user.image ?? null,
+      name: user?.name ?? "",
+      image: user?.image ?? null,
     },
   });
 
   async function onSubmit({ name, image }: UpdateProfileValues) {
-    // TODO: Handle profile update
+    // Handle profile update
+
+    const { error } = await authClient.updateUser({
+      name,
+      image,
+    });
+
+    if (error) {
+      toast.error(error.message ?? "Failed to update profile");
+    } else {
+      toast.success("Profile updated");
+      router.refresh();
+    }
   }
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -73,6 +81,26 @@ export function ProfileDetailsForm() {
         <CardTitle>Profile Details</CardTitle>
       </CardHeader>
       <CardContent>
+        {imagePreview && (
+          <div className="flex w-full justify-center">
+            <div className="relative size-32">
+              <UserAvatar
+                name={user.name}
+                image={imagePreview}
+                className="size-32"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                className="absolute -top-2 -right-2 size-6 rounded-full"
+                onClick={() => form.setValue("image", null)}
+                aria-label="Remove image"
+              >
+                <XIcon className="size-4" />
+              </Button>
+            </div>
+          </div>
+        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
             <FormField
@@ -107,35 +135,6 @@ export function ProfileDetailsForm() {
               )}
             />
 
-            {imagePreview && (
-              <div className="relative size-16">
-                <UserAvatar
-                  name={user.name}
-                  image={imagePreview}
-                  className="size-16"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="absolute -top-2 -right-2 size-6 rounded-full"
-                  onClick={() => form.setValue("image", null)}
-                  aria-label="Remove image"
-                >
-                  <XIcon className="size-4" />
-                </Button>
-              </div>
-            )}
-
-            {error && (
-              <div role="alert" className="text-sm text-red-600">
-                {error}
-              </div>
-            )}
-            {status && (
-              <div role="status" className="text-sm text-green-600">
-                {status}
-              </div>
-            )}
             <LoadingButton type="submit" loading={loading}>
               Save changes
             </LoadingButton>

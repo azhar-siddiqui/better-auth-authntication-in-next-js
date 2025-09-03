@@ -1,12 +1,21 @@
+import { getServerSession } from "@/lib/get-session";
 import type { Metadata } from "next";
+import { redirect, unauthorized } from "next/navigation";
 import { ResendVerificationButton } from "./resend-verification-button";
 
 export const metadata: Metadata = {
   title: "Verify Email",
 };
 
-export default function VerifyEmailPage() {
-  // TODO: Redirect user if not authenticated or already verified
+export default async function VerifyEmailPage() {
+  // Redirect user if not authenticated or already verified
+
+  const session = await getServerSession();
+  const user = session?.user;
+
+  if (!user) unauthorized();
+
+  if (user.emailVerified) redirect("/dashboard");
 
   return (
     <main className="flex flex-1 items-center justify-center px-4 text-center">
@@ -17,7 +26,7 @@ export default function VerifyEmailPage() {
             A verification email was sent to your inbox.
           </p>
         </div>
-        <ResendVerificationButton email="john.doe@example.com" />
+        <ResendVerificationButton email={user.email} />
       </div>
     </main>
   );

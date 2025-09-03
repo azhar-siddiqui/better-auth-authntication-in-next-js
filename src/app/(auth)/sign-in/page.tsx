@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Sign in",
 };
 
-export default function SignIn() {
+export default async function SignIn() {
   return (
     <main className="flex min-h-svh items-center justify-center px-4">
       <SignInForm />
